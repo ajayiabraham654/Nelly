@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student / Teacher Portal</title>
+  <link rel="stylesheet" href="index.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Campus Portal</p>
+        <h1>Student & Teacher Login</h1>
+        <p>Access course timetables, download materials, and view offered courses.</p>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="auth-panel">
+        <div class="tabs">
+          <button id="studentTab" class="tab-button active" data-role="student">Student</button>
+          <button id="teacherTab" class="tab-button" data-role="teacher">Teacher</button>
+        </div>
+
+        <form id="loginForm" class="login-form">
+          <div class="field-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" placeholder="Enter username" required />
+          </div>
+          <div class="field-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter password" required />
+          </div>
+          <button type="submit" class="primary-button">Sign In</button>
+          <p class="help-text">Use <strong>student1 / User2024</strong> or <strong>teacher1 / User2024</strong>.</p>
+          <p id="loginMessage" class="message"></p>
+        </form>
+      </section>
+
+      <section id="portal" class="portal hidden">
+        <div class="portal-header">
+          <div>
+            <p class="status-label">Logged in as <span id="currentRole"></span></p>
+            <h2 id="welcomeText">Welcome</h2>
+          </div>
+          <button id="logoutButton" class="secondary-button">Log out</button>
+        </div>
+
+        <div class="cards-grid">
+          <article class="card">
+            <h3>Today's Timetable</h3>
+            <table class="timetable">
+              <thead>
+                <tr><th>Time</th><th>Course</th><th>Room</th></tr>
+              </thead>
+              <tbody id="timetableBody"></tbody>
+            </table>
+          </article>
+
+          <article class="card">
+            <h3>Courses Offered</h3>
+            <ul class="course-list" id="courseList"></ul>
+          </article>
+
+          <article class="card downloads-card">
+            <h3>Download PDFs</h3>
+            <p>Select a resource to download or preview.</p>
+            <ul class="download-list">
+              <li><a href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" download>Class Schedule PDF</a></li>
+              <li><a href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" download>Course Outline PDF</a></li>
+              <li><a href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" download>Teacher Notes PDF</a></li>
+            </ul>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    const loginMessage = document.getElementById('loginMessage');
+    const studentTab = document.getElementById('studentTab');
+    const teacherTab = document.getElementById('teacherTab');
+    const portal = document.getElementById('portal');
+    const currentRole = document.getElementById('currentRole');
+    const welcomeText = document.getElementById('welcomeText');
+    const logoutButton = document.getElementById('logoutButton');
+    const timetableBody = document.getElementById('timetableBody');
+    const courseList = document.getElementById('courseList');
+
+    const users = {
+      student: { username: 'student1', password: 'User2024' },
+      teacher: { username: 'teacher1', password: 'User2024' }
+    };
+
+    const data = {
+      student: {
+        welcome: 'Student Dashboard',
+        timetable: [
+          { time: '09:00 - 10:00', course: 'English Literature', room: 'Room A' },
+          { time: '10:15 - 11:15', course: 'Mathematics', room: 'Room B' },
+          { time: '11:30 - 12:30', course: 'Biology', room: 'Room C' }
+        ],
+        courses: ['English Literature', 'Mathematics', 'Biology', 'Physical Education']
+      },
+      teacher: {
+        welcome: 'Teacher Dashboard',
+        timetable: [
+          { time: '08:30 - 09:30', course: 'Physics', room: 'Lab 2' },
+          { time: '10:00 - 11:00', course: 'Calculus', room: 'Room D' },
+          { time: '11:30 - 12:30', course: 'History', room: 'Room E' }
+        ],
+        courses: ['Physics', 'Calculus', 'History', 'Computer Science']
+      }
+    };
+
+    let selectedRole = 'student';
+
+    function updateRoleTab(role) {
+      selectedRole = role;
+      studentTab.classList.toggle('active', role === 'student');
+      teacherTab.classList.toggle('active', role === 'teacher');
+      loginMessage.textContent = '';
+      loginForm.reset();
+    }
+
+    function renderPortal(role) {
+      const roleData = data[role];
+      currentRole.textContent = role === 'student' ? 'Student' : 'Teacher';
+      welcomeText.textContent = roleData.welcome;
+      timetableBody.innerHTML = roleData.timetable.map(item => `
+        <tr>
+          <td>${item.time}</td>
+          <td>${item.course}</td>
+          <td>${item.room}</td>
+        </tr>
+      `).join('');
+      courseList.innerHTML = roleData.courses.map(course => `<li>${course}</li>`).join('');
+      portal.classList.remove('hidden');
+    }
+
+    studentTab.addEventListener('click', () => updateRoleTab('student'));
+    teacherTab.addEventListener('click', () => updateRoleTab('teacher'));
+
+    loginForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const valid = users[selectedRole];
+
+      if (username === valid.username && password === valid.password) {
+        loginMessage.textContent = '';
+        renderPortal(selectedRole);
+      } else {
+        loginMessage.textContent = 'Invalid username or password. Please try again.';
+        loginMessage.classList.add('error');
+      }
+    });
+
+    logoutButton.addEventListener('click', () => {
+      portal.classList.add('hidden');
+      loginForm.reset();
+      loginMessage.textContent = 'You have logged out.';
+      loginMessage.classList.remove('error');
+    });
+  </script>
+</body>
+</html>
